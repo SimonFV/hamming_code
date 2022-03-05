@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import messagebox
+from tkinter import BOTH
 import hamming
 import convertidor
 
@@ -7,14 +8,12 @@ import convertidor
 class App:
     def __init__(self, master):
         # Configuración de la ventana
-
         master.title("Hamming Code App")
         master.geometry("1024x720")
         master.configure(bg="gray20")
         master.protocol("WM_DELETE_WINDOW", self.on_closing)
 
         # Frames para dividir la interfaz en secciones
-
         self.basesFrame = tk.Frame(master, bg="gray15")
         self.basesFrame.pack(side=tk.TOP, fill=tk.X, padx=5, pady=5)
 
@@ -28,7 +27,6 @@ class App:
         self.errorFrame.pack(side=tk.TOP, fill=tk.X, padx=5, pady=5)
 
         # Labels
-
         self.label1 = tk.Label(
             self.basesFrame,
             text="Bases:",
@@ -60,11 +58,9 @@ class App:
         entry.grid(row=0, column=1, sticky=tk.W)
 
         # Tabla de conversion
-
         self.update_conversion_table(["-", "-", "-", "-"])
 
         # Tabla de paridad de hamming
-
         parity_titles = [
             "Hamming",
             "Dato (sin paridad)",
@@ -130,6 +126,7 @@ class App:
                     [input, results[0], results[1], results[2]]
                 )
                 self.update_parity_table(convertidor.str_to_list(results[0]))
+                self.draw_signal(results[0])
             else:
                 messagebox.showerror(
                     "Error",
@@ -144,6 +141,65 @@ class App:
             command=update_button,
         )
         self.update.grid(row=0, column=2, sticky=tk.W)
+
+    # Funcion que dibuja los ejes X y Y de la señal unipolar con un estado previo en bajo
+    def draw_signal(self, bin_data):
+        # Definicion de canvas
+        self.canvas = tk.Canvas(self.signalFrame, width=955, bg="gray15")
+        self.canvas.grid(row=0, column=4, sticky=tk.W)
+
+        # Eje X
+        self.canvas.create_line(120, 200, 830, 200, fill="gray", width=1.5)
+        self.canvas.create_text(815, 210, fill="white", font="Times 12 bold", text="Time")
+
+        # Eje Y
+        self.canvas.create_line(130, 210, 130, 80, fill="gray", width=1.5)
+        self.canvas.create_text(127, 65, fill="white", font="Times 12 bold", text="Amplitude")
+
+        # Estado inicial de la señal
+        self.canvas.create_line(130, 200, 180, 200, fill="green", width=3.0)
+        self.canvas.create_line(180, 210, 180, 130, dash=(4, 2), fill="gray")
+        self.canvas.create_text(155, 120, fill="white", font="Times 10 bold", text="0")
+        self.x = 180
+        self.y = 200
+
+        self.draw_signal_aux(bin_data)
+
+    # Funcion que dibuja el resto de la señal de acuerdo con el dato binario procedente del numero hexadecimal ingresado
+    def draw_signal_aux(self, bin_data):
+        if bin_data != "":
+            # Dato de entrada 0
+            if bin_data[0] == "0":
+                self.canvas.create_line(self.x, self.y, self.x + 50, self.y, fill="green", width=3.0)
+                self.x = self.x + 50
+                self.canvas.create_line(self.x, 210, self.x, 130, dash=(4, 2), fill="gray")
+                self.canvas.create_text(self.x - 25, 120, fill="white", font="Times 10 bold", text="0")
+                
+                self.draw_signal_aux(bin_data[1:])
+
+            # Dato de entrada 1 y estado previo en bajo
+            elif bin_data[0] == "1" and self.y == 200:
+                self.canvas.create_line(self.x, self.y, self.x, self.y - 50, fill="green", width=3.0)
+                self.y = self.y - 50
+
+                self.canvas.create_line(self.x, self.y, self.x + 50, self.y, fill="green", width=3.0)
+                self.x = self.x + 50
+                self.canvas.create_line(self.x, 210, self.x, 130, dash=(4, 2), fill="gray")
+                self.canvas.create_text(self.x - 25, 120, fill="white", font="Times 10 bold", text="1")
+
+                self.draw_signal_aux(bin_data[1:])
+
+            # Dato de entrada 1 y estado previo en alto
+            elif bin_data[0] == "1" and self.y == 150:
+                self.canvas.create_line(self.x, self.y, self.x, self.y + 50, fill="green", width=3.0)
+                self.y = self.y + 50
+
+                self.canvas.create_line(self.x, self.y, self.x + 50, self.y, fill="green", width=3.0)
+                self.x = self.x + 50
+                self.canvas.create_line(self.x, 210, self.x, 130, dash=(4, 2), fill="gray")
+                self.canvas.create_text(self.x - 25, 120, fill="white", font="Times 10 bold", text="1")
+
+                self.draw_signal_aux(bin_data[1:])
 
     # ------------------------------------------------------------
     # Métodos
@@ -170,7 +226,6 @@ class App:
                     self.parityFrame.grid_slaves(i + 1, j + 1)[0].config(text="")
 
     def update_conversion_table(self, data):
-
         conversion_titles = [
             "Hexadecimal",
             "Binario",

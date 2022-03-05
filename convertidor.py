@@ -16,7 +16,7 @@ def hex_to_all(Hex):
 def is_hex(Hilera):   
     if Hilera=="":
         return True
-    if Hilera[0] in "0123456789ABCDEF" :
+    if Hilera[0] in "0123456789ABCDEF":
         return is_hex(Hilera[1:])
     else:
         return False
