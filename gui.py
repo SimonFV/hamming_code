@@ -3,6 +3,7 @@ from tkinter import messagebox
 import hamming
 import convertidor
 
+
 class App:
     def __init__(self, master):
         # Configuración de la ventana
@@ -26,7 +27,6 @@ class App:
         self.errorFrame = tk.Frame(master, bg="gray15")
         self.errorFrame.pack(side=tk.TOP, fill=tk.X, padx=5, pady=5)
 
-        
         # Labels
 
         self.label1 = tk.Label(
@@ -53,21 +53,20 @@ class App:
             font=("Arial Black", 12),
         ).grid(row=0, column=0, sticky=tk.W)
 
-        #Entry
-        entry = tk.Entry(self.basesFrame,
-            bg="gray15",
-            fg="gray70",
-            font=("Arial Black", 12))
-        entry.grid(row=0, column=1, sticky=tk.W) 
+        # Entry
+        entry = tk.Entry(
+            self.basesFrame, bg="gray15", fg="gray70", font=("Arial Black", 12)
+        )
+        entry.grid(row=0, column=1, sticky=tk.W)
 
         # Tabla de conversion
 
-        self.update_conversion_table(["-","-","-","-"])
+        self.update_conversion_table(["-", "-", "-", "-"])
 
         # Tabla de paridad de hamming
 
         parity_titles = [
-            "Paridad:",
+            "Hamming",
             "Dato (sin paridad)",
             "P1",
             "P2",
@@ -124,27 +123,32 @@ class App:
         # Funcion del boton update
         def update_button():
             input = entry.get()
-            print (len(input))
-            if(convertidor.is_hex(input) and len(input)==3):
-            
+            if convertidor.is_hex(input) and len(input) == 3:
+
                 results = convertidor.hex_to_all(input)
-                self.update_conversion_table([input, results[0], results[1],results[2]])
+                self.update_conversion_table(
+                    [input, results[0], results[1], results[2]]
+                )
                 self.update_parity_table(convertidor.str_to_list(results[0]))
             else:
-                messagebox.showerror("Error", "Debe ingresar un número hexadecimal de 3 dígitos \n (De 000 a FFF)")
+                messagebox.showerror(
+                    "Error",
+                    "Debe ingresar un número hexadecimal de 3 dígitos \n (De 000 a FFF)",
+                )
 
         self.update = tk.Button(
             self.basesFrame,
-            text="update",
-            command= update_button
-            
+            text="PROCESAR",
+            bg="gray25",
+            fg="lightgreen",
+            command=update_button,
         )
         self.update.grid(row=0, column=2, sticky=tk.W)
 
     # ------------------------------------------------------------
     # Métodos
     # ------------------------------------------------------------
-    
+
     # Actualiza la tabla de paridad con la lista de 12 bits ingresada
     def update_parity_table(self, data):
         extended_data = hamming.add_places(data)
@@ -163,10 +167,10 @@ class App:
                         text=str(table[i][j])
                     )
                 else:
-                    self.parityFrame.grid_slaves(i + 1, j + 1)[0].config(text="-")
+                    self.parityFrame.grid_slaves(i + 1, j + 1)[0].config(text="")
 
     def update_conversion_table(self, data):
-        
+
         conversion_titles = [
             "Hexadecimal",
             "Binario",
@@ -182,7 +186,7 @@ class App:
                 fg="gray90",
                 font=("Arial Black", 12, "bold"),
             )
-            self.cell.grid(row=m+1, column=0)
+            self.cell.grid(row=m + 1, column=0)
             self.cell.config(text=conversion_titles[m])
 
         for i in range(0, 4):
@@ -195,7 +199,7 @@ class App:
                     font=("Arial Black", 12, "bold"),
                     text=data[i],
                 )
-                self.cell.grid(row=i+1, column=j)
+                self.cell.grid(row=i + 1, column=j)
                 if (j != 0) and (j & (j - 1) == 0):
                     self.cell.configure(fg="yellow")
 
