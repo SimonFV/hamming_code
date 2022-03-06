@@ -9,8 +9,8 @@ class App:
     def __init__(self, master):
         # Configuración de la ventana
         master.title("Hamming Code App")
-        master.geometry("1024x720")
-        master.configure(bg="gray20")
+        master.geometry("1240x800")
+        master.configure(bg="gray25")
         master.protocol("WM_DELETE_WINDOW", self.on_closing)
 
         # Frames para dividir la interfaz en secciones
@@ -29,25 +29,33 @@ class App:
         # Labels
         self.label1 = tk.Label(
             self.basesFrame,
-            text="Bases:",
+            text="Conversión",
             bg="gray15",
-            fg="gray70",
+            fg="cyan",
             font=("Arial Black", 12),
-        ).grid(row=0, column=0, sticky=tk.W)
+        ).grid(row=0, column=0, padx=5, sticky=tk.W)
+
+        self.label1 = tk.Label(
+            self.basesFrame,
+            text="Paridad: ",
+            bg="gray15",
+            fg="yellow",
+            font=("Arial Black", 12),
+        ).grid(row=0, column=2, padx=5, sticky=tk.W)
 
         self.label2 = tk.Label(
             self.signalFrame,
-            text="NRZI:",
+            text="Señal NRZI",
             bg="gray15",
-            fg="gray70",
+            fg="cyan",
             font=("Arial Black", 12),
         ).grid(row=0, column=0, sticky=tk.W)
 
         self.label4 = tk.Label(
             self.errorFrame,
-            text="Error:",
+            text="Error",
             bg="gray15",
-            fg="gray70",
+            fg="cyan",
             font=("Arial Black", 12),
         ).grid(row=0, column=0, sticky=tk.W)
 
@@ -80,7 +88,7 @@ class App:
                 fg="gray90",
                 font=("Arial Black", 12, "bold"),
             )
-            self.cell.grid(row=m, column=0)
+            self.cell.grid(row=m, column=0, sticky=tk.W)
             self.cell.config(text=parity_titles[m])
 
         p = 1
@@ -137,24 +145,40 @@ class App:
             self.basesFrame,
             text="PROCESAR",
             bg="gray25",
-            fg="lightgreen",
+            fg="cyan",
+            font=("Arial Black", 10, "bold"),
             command=update_button,
         )
-        self.update.grid(row=0, column=2, sticky=tk.W)
+        self.update.grid(row=0, column=4, padx=10, sticky=tk.W)
+
+        self.parityOptions = ["Par", "Impar"]
+        self.parityVar = tk.StringVar()
+        self.parityVar.set(self.parityOptions[0])
+        self.parity = tk.OptionMenu(
+            self.basesFrame, self.parityVar, *self.parityOptions,
+        )
+        self.parity.grid(row=0, column=3, sticky=tk.W)
+        self.parity.config(
+            bg="gray25", fg="gray90", font=("Arial Black", 10, "bold"),
+        )
 
     # Funcion que dibuja los ejes X y Y de la señal unipolar con un estado previo en bajo
     def draw_signal(self, bin_data):
         # Definicion de canvas
         self.canvas = tk.Canvas(self.signalFrame, width=955, bg="gray15")
-        self.canvas.grid(row=0, column=4, sticky=tk.W)
+        self.canvas.grid(row=1, column=4, sticky=tk.W)
 
         # Eje X
         self.canvas.create_line(120, 200, 830, 200, fill="gray", width=1.5)
-        self.canvas.create_text(815, 210, fill="white", font="Times 12 bold", text="Time")
+        self.canvas.create_text(
+            815, 210, fill="white", font="Times 12 bold", text="Tiempo"
+        )
 
         # Eje Y
         self.canvas.create_line(130, 210, 130, 80, fill="gray", width=1.5)
-        self.canvas.create_text(127, 65, fill="white", font="Times 12 bold", text="Amplitude")
+        self.canvas.create_text(
+            127, 65, fill="white", font="Times 12 bold", text="Amplitud"
+        )
 
         # Estado inicial de la señal
         self.canvas.create_line(130, 200, 180, 200, fill="green", width=3.0)
@@ -170,45 +194,63 @@ class App:
         if bin_data != "":
             # Dato de entrada 0
             if bin_data[0] == "0":
-                self.canvas.create_line(self.x, self.y, self.x + 50, self.y, fill="green", width=3.0)
+                self.canvas.create_line(
+                    self.x, self.y, self.x + 50, self.y, fill="green", width=3.0
+                )
                 self.x = self.x + 50
-                self.canvas.create_line(self.x, 210, self.x, 130, dash=(4, 2), fill="gray")
-                self.canvas.create_text(self.x - 25, 120, fill="white", font="Times 10 bold", text="0")
-                
+                self.canvas.create_line(
+                    self.x, 210, self.x, 130, dash=(4, 2), fill="gray"
+                )
+                self.canvas.create_text(
+                    self.x - 25, 120, fill="white", font="Times 10 bold", text="0"
+                )
+
                 self.draw_signal_aux(bin_data[1:])
 
             # Dato de entrada 1 y estado previo en bajo
             elif bin_data[0] == "1" and self.y == 200:
-                self.canvas.create_line(self.x, self.y, self.x, self.y - 50, fill="green", width=3.0)
+                self.canvas.create_line(
+                    self.x, self.y, self.x, self.y - 50, fill="green", width=3.0
+                )
                 self.y = self.y - 50
 
-                self.canvas.create_line(self.x, self.y, self.x + 50, self.y, fill="green", width=3.0)
+                self.canvas.create_line(
+                    self.x, self.y, self.x + 50, self.y, fill="green", width=3.0
+                )
                 self.x = self.x + 50
-                self.canvas.create_line(self.x, 210, self.x, 130, dash=(4, 2), fill="gray")
-                self.canvas.create_text(self.x - 25, 120, fill="white", font="Times 10 bold", text="1")
+                self.canvas.create_line(
+                    self.x, 210, self.x, 130, dash=(4, 2), fill="gray"
+                )
+                self.canvas.create_text(
+                    self.x - 25, 120, fill="white", font="Times 10 bold", text="1"
+                )
 
                 self.draw_signal_aux(bin_data[1:])
 
             # Dato de entrada 1 y estado previo en alto
             elif bin_data[0] == "1" and self.y == 150:
-                self.canvas.create_line(self.x, self.y, self.x, self.y + 50, fill="green", width=3.0)
+                self.canvas.create_line(
+                    self.x, self.y, self.x, self.y + 50, fill="green", width=3.0
+                )
                 self.y = self.y + 50
 
-                self.canvas.create_line(self.x, self.y, self.x + 50, self.y, fill="green", width=3.0)
+                self.canvas.create_line(
+                    self.x, self.y, self.x + 50, self.y, fill="green", width=3.0
+                )
                 self.x = self.x + 50
-                self.canvas.create_line(self.x, 210, self.x, 130, dash=(4, 2), fill="gray")
-                self.canvas.create_text(self.x - 25, 120, fill="white", font="Times 10 bold", text="1")
+                self.canvas.create_line(
+                    self.x, 210, self.x, 130, dash=(4, 2), fill="gray"
+                )
+                self.canvas.create_text(
+                    self.x - 25, 120, fill="white", font="Times 10 bold", text="1"
+                )
 
                 self.draw_signal_aux(bin_data[1:])
-
-    # ------------------------------------------------------------
-    # Métodos
-    # ------------------------------------------------------------
 
     # Actualiza la tabla de paridad con la lista de 12 bits ingresada
     def update_parity_table(self, data):
         extended_data = hamming.add_places(data)
-        matrix = hamming.get_parity_table(extended_data)
+        matrix = hamming.get_parity_table(extended_data, self.parityVar.get())
         data_with_parity = hamming.final_message(matrix)
         table = []
         table.append(extended_data)
@@ -241,7 +283,7 @@ class App:
                 fg="gray90",
                 font=("Arial Black", 12, "bold"),
             )
-            self.cell.grid(row=m + 1, column=0)
+            self.cell.grid(row=m + 1, column=0, sticky=tk.W)
             self.cell.config(text=conversion_titles[m])
 
         for i in range(0, 4):
