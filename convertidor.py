@@ -2,6 +2,7 @@
 
 #Funcion principal, recibe un numero en hexadecimal y retorna error o una lista con la conversion a b2, b8 y b10
 def hex_to_all(Hex):
+    Hex= Hex.upper()
     if (len(Hex) == 3):
         if is_hex(Hex):
             
@@ -14,9 +15,10 @@ def hex_to_all(Hex):
         return []
 #Valida si un número es hexadecimal y de 3 digitos
 def is_hex(Hilera):   
+    Hilera = Hilera.upper()
     if Hilera=="":
         return True
-    if Hilera[0] in "0123456789ABCDEF":
+    if Hilera[0] in "0123456789ABCDEF" :
         return is_hex(Hilera[1:])
     else:
         return False
@@ -67,6 +69,7 @@ def add_zeros(Hilera):
         return Hilera
     else:
         return add_zeros("0" + Hilera)
+        
 def str_to_list(Hilera):
     lista = []
     while(Hilera!=""):
