@@ -12,6 +12,7 @@ class App:
         master.geometry("1240x800")
         master.configure(bg="gray25")
         master.protocol("WM_DELETE_WINDOW", self.on_closing)
+        self.data_with_parity = []
 
         # Scroll
         self.canvasScroll = tk.Canvas(master, bg="gray25")
@@ -43,7 +44,7 @@ class App:
                 scrollregion=self.canvasScroll.bbox("all")
             ),
         )
-        self.canvasScroll.bind_all(
+        self.mainFrame.bind_all(
             "<MouseWheel>",
             lambda e: self.canvasScroll.yview_scroll(
                 int(-1 * (e.delta / 120)), "units"
@@ -247,7 +248,7 @@ class App:
                 d += 1
 
         for i in range(2, 7):
-            for j in range(1, 18):
+            for j in range(1, 20):
                 self.cell = tk.Label(
                     self.errorFrame,
                     width=4,
@@ -261,15 +262,17 @@ class App:
                     self.cell.configure(fg="yellow")
 
         for j in range(1, 18):
-            self.cell = tk.Entry(
+            self.cell = tk.Button(
                 self.errorFrame,
                 width=4,
                 bg="gray15",
                 fg="cyan",
                 font=("Arial Black", 12, "bold"),
+                text="-",
+                command=lambda j=j: self.update_error_table(j - 1),
+                state=tk.DISABLED,
             )
             self.cell.grid(row=1, column=j)
-            self.cell.insert(tk.END, "-")
             if (j != 0) and (j & (j - 1) == 0):
                 self.cell.configure(fg="yellow")
 
@@ -362,12 +365,12 @@ class App:
     def update_parity_table(self, data):
         extended_data = hamming.add_places(data)
         matrix = hamming.get_parity_table(extended_data, self.parityVar.get())
-        data_with_parity = hamming.final_message(matrix)
+        self.data_with_parity = hamming.final_message(matrix)
         table = []
         table.append(extended_data)
         for row in matrix:
             table.append(row)
-        table.append(data_with_parity)
+        table.append(self.data_with_parity)
 
         for i in range(len(table)):
             for j in range(len(table[i])):
@@ -377,7 +380,37 @@ class App:
                     )
                 else:
                     self.parityFrame.grid_slaves(i + 1, j + 1)[0].config(text="")
-        # master.geometry("1240x800")
+
+        # Error
+        for j in range(len(self.data_with_parity)):
+            self.errorFrame.grid_slaves(1, j + 1)[0].config(
+                text=str(self.data_with_parity[j]), state=tk.NORMAL,
+            )
+        for i in range(len(matrix)):
+            for j in range(len(matrix[i])):
+                if matrix[i][j] != -1:
+                    self.errorFrame.grid_slaves(i + 2, j + 1)[0].config(
+                        text=str(matrix[i][j])
+                    )
+                else:
+                    self.errorFrame.grid_slaves(i + 2, j + 1)[0].config(text="")
+
+    def update_error_table(self, position):
+        if self.data_with_parity[position] == 1:
+            self.data_with_parity[position] = 0
+        else:
+            self.data_with_parity[position] = 1
+        self.errorFrame.grid_slaves(1, position + 1)[0].config(
+            text=str(self.data_with_parity[position])
+        )
+        for j in range(len(self.data_with_parity)):
+            self.errorFrame.grid_slaves(1, j + 1)[0].config(state=tk.DISABLED)
+
+        results = hamming.compare(self.data_with_parity, self.parityVar.get())
+
+        for i in range(5):
+            self.errorFrame.grid_slaves(i + 2, 18)[0].config(text=results[0][i])
+            self.errorFrame.grid_slaves(i + 2, 19)[0].config(text=str(results[1][i]))
 
     def update_conversion_table(self, data):
         conversion_titles = [

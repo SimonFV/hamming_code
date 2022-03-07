@@ -1,3 +1,6 @@
+import copy
+
+
 def is_power_of_two(n):
     return (n != 0) and (n & (n - 1) == 0)
 
@@ -15,6 +18,17 @@ def add_places(data):
             digit += 1
         i += 1
     return extended_data
+
+
+# Agrega las casillas de los bits de paridad
+def clear_places(extended_data):
+    clear_data = copy.deepcopy(extended_data)
+    i = 1
+    while i < len(clear_data):
+        if is_power_of_two(i):
+            clear_data[i - 1] = -1
+        i += 1
+    return clear_data
 
 
 # Retorna 0 si la cantidad de 1 en la lista es par, 1 si es impar
@@ -73,3 +87,20 @@ def final_message(matrix):
                 break
     return message
 
+
+def compare(error_data, parity):
+    clear_data = clear_places(error_data)
+    new_data = final_message(get_parity_table(clear_data, parity))
+    results = []
+    bits = []
+    n = 1
+    while pow(2, n - 1) < len(new_data):
+        if error_data[pow(2, n - 1) - 1] != new_data[pow(2, n - 1) - 1]:
+            results.append("Error")
+            bits.append(1)
+        else:
+            results.append("Bien")
+            bits.append(0)
+        n += 1
+
+    return (results, bits)
