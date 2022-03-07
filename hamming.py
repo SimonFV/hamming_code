@@ -77,6 +77,7 @@ def get_parity_table(extended_data, parity):
     return matrix
 
 
+# Retorna el dato final con los bits de paridad respectivos
 def final_message(matrix):
     message = []
     for n in range(len(matrix)):
@@ -88,6 +89,8 @@ def final_message(matrix):
     return message
 
 
+# Aplica el algoritmo de hamming nuevamente al mensaje con error para comparar
+# los bits de paridad donde hay errores
 def compare(error_data, parity):
     clear_data = clear_places(error_data)
     new_data = final_message(get_parity_table(clear_data, parity))
@@ -104,3 +107,13 @@ def compare(error_data, parity):
         n += 1
 
     return (results, bits)
+
+
+# Convierte una lista de bits a decimal para encontrar la posicion del error
+def position_of_error(binary):
+    b = copy.deepcopy(binary)
+    decimal = 0
+    b.reverse()
+    for i in range(len(b)):
+        decimal = decimal + pow(2, i) * int(b[i])
+    return decimal

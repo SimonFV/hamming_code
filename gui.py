@@ -276,6 +276,31 @@ class App:
             if (j != 0) and (j & (j - 1) == 0):
                 self.cell.configure(fg="yellow")
 
+        self.errorPosition = tk.Label(
+            self.errorFrame,
+            bg="gray15",
+            fg="gray90",
+            font=("Arial Black", 12, "bold"),
+            text="Error: ",
+        )
+        self.errorPosition.grid(row=7, column=0)
+        self.binaryPosition = tk.Label(
+            self.errorFrame,
+            bg="gray15",
+            fg="gray90",
+            font=("Arial Black", 12, "bold"),
+            text="-",
+        )
+        self.binaryPosition.grid(row=7, column=1)
+        self.decimalPosition = tk.Label(
+            self.errorFrame,
+            bg="gray15",
+            fg="gray90",
+            font=("Arial Black", 12, "bold"),
+            text="-",
+        )
+        self.decimalPosition.grid(row=7, column=2)
+
     # Funcion que dibuja los ejes X y Y de la señal unipolar con un estado previo en bajo
     def draw_signal(self, bin_data):
         # Definicion de canvas
@@ -394,15 +419,25 @@ class App:
                     )
                 else:
                     self.errorFrame.grid_slaves(i + 2, j + 1)[0].config(text="")
+        for j in range(5):
+            self.errorFrame.grid_slaves(j + 2, 18)[0].config(text="Bien", fg="cyan")
+            self.errorFrame.grid_slaves(j + 2, 19)[0].config(text="0")
+        self.errorFrame.grid_slaves(7, 1)[0].config(text="-")
+        self.errorFrame.grid_slaves(7, 2)[0].config(text="-")
 
+    # Cambia el bit seleccionado y ejecuta la busqueda de errores con hamming
     def update_error_table(self, position):
         if self.data_with_parity[position] == 1:
             self.data_with_parity[position] = 0
         else:
             self.data_with_parity[position] = 1
-        self.errorFrame.grid_slaves(1, position + 1)[0].config(
-            text=str(self.data_with_parity[position])
-        )
+
+        for j in range(6):
+            if self.errorFrame.grid_slaves(j + 1, position + 1)[0]["text"] != "":
+                self.errorFrame.grid_slaves(j + 1, position + 1)[0].config(
+                    text=str(self.data_with_parity[position])
+                )
+
         for j in range(len(self.data_with_parity)):
             self.errorFrame.grid_slaves(1, j + 1)[0].config(state=tk.DISABLED)
 
@@ -410,7 +445,15 @@ class App:
 
         for i in range(5):
             self.errorFrame.grid_slaves(i + 2, 18)[0].config(text=results[0][i])
+            if results[0][i] == "Error":
+                self.errorFrame.grid_slaves(i + 2, 18)[0].config(fg="red")
             self.errorFrame.grid_slaves(i + 2, 19)[0].config(text=str(results[1][i]))
+        errorPos = ""
+        for i in range(5):
+            errorPos = self.errorFrame.grid_slaves(i + 2, 19)[0]["text"] + errorPos
+        self.errorFrame.grid_slaves(7, 1)[0].config(text=errorPos)
+        decimalPos = hamming.position_of_error(list(errorPos))
+        self.errorFrame.grid_slaves(7, 2)[0].config(text=str(decimalPos))
 
     def update_conversion_table(self, data):
         conversion_titles = [
