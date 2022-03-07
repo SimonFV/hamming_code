@@ -104,4 +104,3 @@ def compare(error_data, parity):
         n += 1
 
     return (results, bits)
-

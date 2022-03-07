@@ -9,7 +9,7 @@ class App:
     def __init__(self, master):
         # Configuración de la ventana
         master.title("Hamming Code App")
-        master.geometry("1240x800")
+        master.geometry("1320x800")
         master.configure(bg="gray25")
         master.protocol("WM_DELETE_WINDOW", self.on_closing)
         self.data_with_parity = []
@@ -105,8 +105,6 @@ class App:
             "Dato (con paridad)",
         ]
 
-        error_titles = ["Hamming", "Dato (con paridad)", "P1", "P2", "P3", "P4", "P5"]
-
         for m in range(8):
             self.cell = tk.Label(
                 self.parityFrame,
@@ -118,17 +116,6 @@ class App:
             self.cell.grid(row=m, column=0, sticky=tk.W)
             self.cell.config(text=parity_titles[m])
 
-        for m in range(len(error_titles)):
-            self.cellError = tk.Label(
-                self.errorFrame,
-                width=15,
-                bg="gray15",
-                fg="gray90",
-                font=("Arial Black", 12, "bold"),
-            )
-            self.cellError.grid(row=m, column=0)
-            self.cellError.config(text=error_titles[m])
-
         p = 1
         d = 1
         for n in range(1, 18):
@@ -139,38 +126,14 @@ class App:
                 fg="cyan",
                 font=("Arial Black", 12, "bold"),
             )
-            self.cellError = tk.Label(
-                self.errorFrame,
-                width=4,
-                bg="gray15",
-                fg="cyan",
-                font=("Arial Black", 12, "bold"),
-            )
             self.cell.grid(row=0, column=n)
-            self.cellError.grid(row=0, column=n)
             if (n != 0) and (n & (n - 1) == 0):
                 self.cell.config(text="P" + str(p))
                 self.cell.configure(fg="yellow")
-                self.cellError.config(text="P" + str(p))
-                self.cellError.configure(fg="yellow")
                 p += 1
             else:
                 self.cell.config(text="D" + str(d))
-                self.cellError.config(text="D" + str(d))
                 d += 1
-
-        # Setting bit de paridad column
-        self.cellError = tk.Label(
-            self.errorFrame,
-            width=12,
-            bg="gray15",
-            fg="cyan",
-            font=("Arial Black", 12, "bold"),
-        )
-        self.cellError.grid(row=0, column=19)
-        self.cellError.config(text=" Bit de Paridad")
-        self.cellError.configure(fg="red")
-        # -------------------------------------
 
         for i in range(1, 8):
             for j in range(1, 18):
@@ -185,31 +148,6 @@ class App:
                 self.cell.grid(row=i, column=j)
                 if (j != 0) and (j & (j - 1) == 0):
                     self.cell.configure(fg="yellow")
-
-        for i in range(1, 7):
-            for j in range(1, 18):
-                self.cellError = tk.Label(
-                    self.errorFrame,
-                    width=4,
-                    bg="gray15",
-                    fg="cyan",
-                    font=("Arial Black", 12, "bold"),
-                    text="-",
-                )
-                self.cellError.grid(row=i, column=j)
-                if (j != 0) and (j & (j - 1) == 0):
-                    self.cellError.configure(fg="yellow")
-
-        for i in range(1, 7):
-            self.cellError = tk.Label(
-                self.errorFrame,
-                width=4,
-                bg="gray15",
-                fg="cyan",
-                font=("Arial Black", 12, "bold"),
-                text="-",
-            )
-            self.cellError.grid(row=i, column=19)
 
         # Funcion del boton update
         def update_button():
