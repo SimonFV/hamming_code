@@ -18,17 +18,21 @@ def add_places(data):
 
 
 # Retorna 0 si la cantidad de 1 en la lista es par, 1 si es impar
-def is_even(data):
+def is_even(data, parity):
     total = 0
     for i in data:
         if i == 1:
             total += 1
-    return total % 2
+    if parity == "Impar":
+        return total % 2
+    if total % 2 == 0:
+        return 1
+    return 0
 
 
 # Revisa la paridad de los datos para un valor Pn y retorna dicha lista con el
 # bit de paridad modificado y con -1 en las casillas vacias
-def check_parity(n, data):
+def check_parity(n, data, parity):
     data_to_check = []
     m = pow(2, n - 1)
     i = m - 1
@@ -45,16 +49,16 @@ def check_parity(n, data):
             data_to_check.append(-1)
             i += 1
             j += 1
-    data_to_check[m - 1] = is_even(data_to_check)
+    data_to_check[m - 1] = is_even(data_to_check, parity)
     return data_to_check
 
 
 # Construye la matriz de paridad segun el codigo hamming
-def get_parity_table(extended_data):
+def get_parity_table(extended_data, parity):
     matrix = []
     n = 1
     while pow(2, n - 1) < len(extended_data):
-        matrix.append(check_parity(n, extended_data))
+        matrix.append(check_parity(n, extended_data, parity))
         n += 1
     return matrix
 
