@@ -72,6 +72,16 @@ class App:
             "Dato (con paridad)",
         ]
 
+        error_titles = [
+            "Hamming",
+            "Dato (con paridad)",
+            "P1",
+            "P2",
+            "P3",
+            "P4",
+            "P5"
+        ]
+
         for m in range(8):
             self.cell = tk.Label(
                 self.parityFrame,
@@ -83,6 +93,18 @@ class App:
             self.cell.grid(row=m, column=0)
             self.cell.config(text=parity_titles[m])
 
+        for m in range(len(error_titles)):
+            self.cellError = tk.Label(
+                self.errorFrame,
+                width=15,
+                bg="gray15",
+                fg="gray90",
+                font=("Arial Black", 12, "bold"),
+            )
+            self.cellError.grid(row=m, column=0)
+            self.cellError.config(text=error_titles[m])
+
+
         p = 1
         d = 1
         for n in range(1, 18):
@@ -93,14 +115,38 @@ class App:
                 fg="cyan",
                 font=("Arial Black", 12, "bold"),
             )
+            self.cellError = tk.Label(
+                self.errorFrame,
+                width=4,
+                bg="gray15",
+                fg="cyan",
+                font=("Arial Black", 12, "bold"),
+            )
             self.cell.grid(row=0, column=n)
+            self.cellError.grid(row=0, column=n)
             if (n != 0) and (n & (n - 1) == 0):
                 self.cell.config(text="P" + str(p))
                 self.cell.configure(fg="yellow")
+                self.cellError.config(text="P" + str(p))
+                self.cellError.configure(fg="yellow")
                 p += 1
             else:
                 self.cell.config(text="D" + str(d))
+                self.cellError.config(text="D" + str(d))
                 d += 1
+
+        # Setting bit de paridad column
+        self.cellError = tk.Label(
+            self.errorFrame,
+            width=12,
+            bg="gray15",
+            fg="cyan",
+            font=("Arial Black", 12, "bold"),
+        )       
+        self.cellError.grid(row=0, column=19)
+        self.cellError.config(text=" Bit de Paridad")
+        self.cellError.configure(fg="red")
+        #-------------------------------------
 
         for i in range(1, 8):
             for j in range(1, 18):
@@ -115,6 +161,32 @@ class App:
                 self.cell.grid(row=i, column=j)
                 if (j != 0) and (j & (j - 1) == 0):
                     self.cell.configure(fg="yellow")
+
+        for i in range(1, 7):
+            for j in range(1, 18):
+                self.cellError = tk.Label(
+                    self.errorFrame,
+                    width=4,
+                    bg="gray15",
+                    fg="cyan",
+                    font=("Arial Black", 12, "bold"),
+                    text="-",
+                )
+                self.cellError.grid(row=i, column=j)
+                if (j != 0) and (j & (j - 1) == 0):
+                    self.cellError.configure(fg="yellow")
+
+
+        for i in range(1,7):
+            self.cellError = tk.Label(
+                    self.errorFrame,
+                    width=4,
+                    bg="gray15",
+                    fg="cyan",
+                    font=("Arial Black", 12, "bold"),
+                    text="-",
+                )
+            self.cellError.grid(row=i, column=19)
 
         # Funcion del boton update
         def update_button():
@@ -210,6 +282,7 @@ class App:
         extended_data = hamming.add_places(data)
         matrix = hamming.get_parity_table(extended_data)
         data_with_parity = hamming.final_message(matrix)
+        data_with_error = hamming.get_error_parity(matrix)
         table = []
         table.append(extended_data)
         for row in matrix:
@@ -224,6 +297,30 @@ class App:
                     )
                 else:
                     self.parityFrame.grid_slaves(i + 1, j + 1)[0].config(text="")
+       
+        # Adding error frame matrix
+        errorTable = []
+        errorTable.append(data_with_parity)
+        for row in matrix:
+            errorTable.append(row)
+        i = 0
+        for i in range(len(errorTable)):
+            for j in range(len(errorTable[i])):
+                if errorTable[i][j] != -1:
+                    self.errorFrame.grid_slaves(i + 1, j + 1)[0].config(
+                        text=str(errorTable[i][j])
+                    )
+                else:
+                    self.errorFrame.grid_slaves(i + 1, j + 1)[0].config(text="")
+        for i in range(len(errorTable)):
+            if data_with_error[i] == 1:
+                 self.errorFrame.grid_slaves(i + 2, 19)[0].config(text=data_with_error[i], fg="red")
+            else: 
+                self.errorFrame.grid_slaves(i + 2, 19)[0].config(text=data_with_error[i], fg="lightgreen")
+                    
+
+
+                    
 
     def update_conversion_table(self, data):
         conversion_titles = [
