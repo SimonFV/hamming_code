@@ -73,3 +73,13 @@ def final_message(matrix):
                 break
     return message
 
+def get_error_parity (matrix):
+    error_list=[]
+    m=len(matrix)
+    i=0
+    for i in range(len(matrix)):
+        if matrix[i][m] == 1:
+            error_list.append(1)
+        else:
+            error_list.append(0)
+    return error_list
