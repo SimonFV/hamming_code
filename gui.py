@@ -13,18 +13,42 @@ class App:
         master.configure(bg="gray25")
         master.protocol("WM_DELETE_WINDOW", self.on_closing)
 
+        # Scroll
+        self.canvasScroll = tk.Canvas(master, bg="gray25")
+        self.canvasScroll.pack(side=tk.LEFT, fill=tk.BOTH, expand=1)
+        self.scrollBar = tk.Scrollbar(master, command=self.canvasScroll.yview)
+        self.scrollBar.pack(side=tk.RIGHT, fill=tk.Y)
+        self.canvasScroll.config(yscrollcommand=self.scrollBar.set)
+
         # Frames para dividir la interfaz en secciones
-        self.basesFrame = tk.Frame(master, bg="gray15")
+
+        self.mainFrame = tk.Frame(self.canvasScroll, bg="gray25")
+
+        self.basesFrame = tk.Frame(self.mainFrame, bg="gray15")
         self.basesFrame.pack(side=tk.TOP, fill=tk.X, padx=5, pady=5)
 
-        self.signalFrame = tk.Frame(master, bg="gray15")
+        self.signalFrame = tk.Frame(self.mainFrame, bg="gray15")
         self.signalFrame.pack(side=tk.TOP, fill=tk.X, padx=5, pady=5)
 
-        self.parityFrame = tk.Frame(master, bg="gray20")
+        self.parityFrame = tk.Frame(self.mainFrame, bg="gray15")
         self.parityFrame.pack(side=tk.TOP, fill=tk.X, padx=5, pady=5)
 
-        self.errorFrame = tk.Frame(master, bg="gray15")
+        self.errorFrame = tk.Frame(self.mainFrame, bg="gray15")
         self.errorFrame.pack(side=tk.TOP, fill=tk.X, padx=5, pady=5)
+
+        self.canvasScroll.create_window((0, 0), window=self.mainFrame, anchor="nw")
+        self.mainFrame.bind(
+            "<Configure>",
+            lambda e: self.canvasScroll.configure(
+                scrollregion=self.canvasScroll.bbox("all")
+            ),
+        )
+        self.canvasScroll.bind_all(
+            "<MouseWheel>",
+            lambda e: self.canvasScroll.yview_scroll(
+                int(-1 * (e.delta / 120)), "units"
+            ),
+        )
 
         # Labels
         self.label1 = tk.Label(
@@ -151,6 +175,7 @@ class App:
         )
         self.update.grid(row=0, column=4, padx=10, sticky=tk.W)
 
+        # Opcion de paridad
         self.parityOptions = ["Par", "Impar"]
         self.parityVar = tk.StringVar()
         self.parityVar.set(self.parityOptions[0])
@@ -161,6 +186,92 @@ class App:
         self.parity.config(
             bg="gray25", fg="gray90", font=("Arial Black", 10, "bold"),
         )
+
+        # Tabla de ERROR de hamming
+        error_titles = [
+            "Detección de error",
+            "Dato recibido",
+            "P1",
+            "P2",
+            "P3",
+            "P4",
+            "P5",
+        ]
+
+        for m in range(7):
+            self.cell = tk.Label(
+                self.errorFrame,
+                width=15,
+                bg="gray15",
+                fg="gray90",
+                font=("Arial Black", 12, "bold"),
+            )
+            self.cell.grid(row=m, column=0, sticky=tk.W)
+            self.cell.config(text=error_titles[m])
+        self.cellParity = tk.Label(
+            self.errorFrame,
+            width=8,
+            bg="gray15",
+            fg="gray90",
+            font=("Arial Black", 12, "bold"),
+            text="Prueba de\nparidad",
+        )
+        self.cellParity.grid(row=0, column=18)
+        self.cellParity2 = tk.Label(
+            self.errorFrame,
+            width=8,
+            bg="gray15",
+            fg="gray90",
+            font=("Arial Black", 12, "bold"),
+            text="Bit de\nparidad",
+        )
+        self.cellParity2.grid(row=0, column=19)
+
+        p = 1
+        d = 1
+        for n in range(1, 18):
+            self.cell = tk.Label(
+                self.errorFrame,
+                width=4,
+                bg="gray15",
+                fg="cyan",
+                font=("Arial Black", 12, "bold"),
+            )
+            self.cell.grid(row=0, column=n)
+            if (n != 0) and (n & (n - 1) == 0):
+                self.cell.config(text="P" + str(p))
+                self.cell.configure(fg="yellow")
+                p += 1
+            else:
+                self.cell.config(text="D" + str(d))
+                d += 1
+
+        for i in range(2, 7):
+            for j in range(1, 18):
+                self.cell = tk.Label(
+                    self.errorFrame,
+                    width=4,
+                    bg="gray15",
+                    fg="cyan",
+                    font=("Arial Black", 12, "bold"),
+                    text="-",
+                )
+                self.cell.grid(row=i, column=j)
+                if (j != 0) and (j & (j - 1) == 0):
+                    self.cell.configure(fg="yellow")
+
+        for j in range(1, 18):
+            self.cell = tk.Entry(
+                self.errorFrame,
+                width=4,
+                bg="gray15",
+                fg="cyan",
+                font=("Arial Black", 12, "bold"),
+            )
+            self.cell.grid(row=1, column=j)
+            self.cell.insert(tk.END, "-")
+            if (j != 0) and (j & (j - 1) == 0):
+                self.cell.configure(fg="yellow")
 
     # Funcion que dibuja los ejes X y Y de la señal unipolar con un estado previo en bajo
     def draw_signal(self, bin_data):
@@ -266,6 +377,7 @@ class App:
                     )
                 else:
                     self.parityFrame.grid_slaves(i + 1, j + 1)[0].config(text="")
+        # master.geometry("1240x800")
 
     def update_conversion_table(self, data):
         conversion_titles = [
